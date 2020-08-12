@@ -29,7 +29,7 @@ void traverse_owners_files(fs::path p, vector<string>& owners) {
   }
 
   if (p == p.root_path()) {
-    throw "reached root path and no OWNERS file was found";
+    return;
   }
 
   traverse_owners_files(p.parent_path(), owners);
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
   fs::path p = path;
   vector<string> owners;
   try {
-    traverse_owners_files(fs::absolute(p), owners);
+    traverse_owners_files(fs::absolute(p).parent_path(), owners);
   } catch (const char* e) {
     cout << "Error finding OWNERS file: " << e << endl;
   }
