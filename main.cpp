@@ -4,7 +4,9 @@
 
 namespace fs = std::filesystem;
 
-bool has_owner_file(fs::path p) { return fs::exists(p / "OWNERS"); }
+fs::path owner_path(fs::path p) { return p / "OWNERS"; }
+
+bool has_owner_file(fs::path p) { return fs::exists(owner_path(p)); }
 
 int main(int argc, char *argv[]) {
   if (argc != 2) {
@@ -19,11 +21,17 @@ int main(int argc, char *argv[]) {
   std::cout << "Checking: " << p << std::endl;
   auto has_file = has_owner_file(p);
   if (has_file) {
-    // TODO read the file
+    std::ifstream file(owner_path(p));
+    if (file.is_open()) {
+      std::string line;
+      while (std::getline(file, line)) {
+        std::cout << line << std::endl;
+      }
+      file.close();
+    }
   } else {
+    // eventually we should recurse, but for now let's just error here
     std::cout << "no OWNERS file found" << std::endl;
     return -1;
   }
-
-  // eventually we should recurse, but for now let's just error here
 }
