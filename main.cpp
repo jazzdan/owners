@@ -55,11 +55,7 @@ int main(int argc, char* argv[]) {
   auto path = argv[1];
   fs::path p = path;
   vector<string> owners;
-  try {
-    traverse_owners_files(fs::absolute(p).parent_path(), owners);
-  } catch (const char* e) {
-    cout << "Error finding OWNERS file: " << e << endl;
-  }
+  traverse_owners_files(fs::absolute(p).parent_path(), owners);
 
   for (auto& element : owners) {
     cout << element << endl;
