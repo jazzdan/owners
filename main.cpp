@@ -3,8 +3,6 @@
 #include <iostream>
 #include <vector>
 
-// TODO(dmiller): why does dan@dmiller.dev print out twice
-// TODO(dmiller): support `set noparent`
 // TODO(dmiller): write some tests maybe
 
 namespace fs = std::filesystem;
@@ -19,12 +17,23 @@ void traverse_owners_files(fs::path p, vector<string>& owners) {
   if (has_owner_file(p)) {
     auto op = owner_path(p);
     ifstream file(op);
+    bool set_noparent = false;
     if (file.is_open()) {
       string line;
       while (getline(file, line)) {
-        owners.push_back(line);
+        if (line == "set noparent") {
+          set_noparent = true;
+        } else {
+          owners.push_back(line);
+        }
       }
       file.close();
+    }
+
+    if (set_noparent) {
+      cout << p << "set noparent, not continuing to search for OWNERS files"
+           << endl;
+      return;
     }
   }
 
