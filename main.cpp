@@ -1,6 +1,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 // TODO(dmiller): combine all recursively
 // TODO(dmiller): support `set noparent`
@@ -12,7 +13,7 @@ fs::path owner_path(fs::path p) { return p / "OWNERS"; }
 
 bool has_owner_file(fs::path p) { return fs::exists(owner_path(p)); }
 
-fs::path find_owners_file_path(fs::path p) {
+fs::path traverse_owners_files(fs::path p, std::vector<std::string>& owners) {
   std::cout << "Checking: " << p << std::endl;
   if (has_owner_file(p)) {
     return owner_path(p);
@@ -22,7 +23,7 @@ fs::path find_owners_file_path(fs::path p) {
     throw "reached root path and no OWNERS file was found";
   }
 
-  return find_owners_file_path(p.parent_path());
+  return traverse_owners_files(p.parent_path(), owners);
 }
 
 int main(int argc, char* argv[]) {
@@ -35,8 +36,9 @@ int main(int argc, char* argv[]) {
 
   auto path = argv[1];
   fs::path p = path;
+  std::vector<std::string> owners;
   try {
-    auto owners_path = find_owners_file_path(fs::absolute(p));
+    auto owners_path = traverse_owners_files(fs::absolute(p), owners);
     std::ifstream file(owner_path(p));
     if (file.is_open()) {
       std::string line;
