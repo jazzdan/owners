@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 
-// TODO(dmiller): combine all recursively
+// TODO(dmiller): why does dan@dmiller.dev print out twice
 // TODO(dmiller): support `set noparent`
 // TODO(dmiller): write some tests maybe
 
@@ -14,17 +14,25 @@ fs::path owner_path(fs::path p) { return p / "OWNERS"; }
 
 bool has_owner_file(fs::path p) { return fs::exists(owner_path(p)); }
 
-fs::path traverse_owners_files(fs::path p, vector<string>& owners) {
+void traverse_owners_files(fs::path p, vector<string>& owners) {
   cout << "Checking: " << p << endl;
   if (has_owner_file(p)) {
-    return owner_path(p);
+    auto op = owner_path(p);
+    ifstream file(op);
+    if (file.is_open()) {
+      string line;
+      while (getline(file, line)) {
+        owners.push_back(line);
+      }
+      file.close();
+    }
   }
 
   if (p == p.root_path()) {
     throw "reached root path and no OWNERS file was found";
   }
 
-  return traverse_owners_files(p.parent_path(), owners);
+  traverse_owners_files(p.parent_path(), owners);
 }
 
 int main(int argc, char* argv[]) {
@@ -39,16 +47,12 @@ int main(int argc, char* argv[]) {
   fs::path p = path;
   vector<string> owners;
   try {
-    auto owners_path = traverse_owners_files(fs::absolute(p), owners);
-    ifstream file(owner_path(p));
-    if (file.is_open()) {
-      string line;
-      while (getline(file, line)) {
-        cout << line << endl;
-      }
-      file.close();
-    }
+    traverse_owners_files(fs::absolute(p), owners);
   } catch (const char* e) {
     cout << "Error finding OWNERS file: " << e << endl;
+  }
+
+  for (auto& element : owners) {
+    cout << element << endl;
   }
 }
