@@ -8,14 +8,14 @@
 namespace fs = std::filesystem;
 using namespace std;
 
-fs::path owner_path(fs::path p) { return p / "OWNERS"; }
+fs::path owners_path(fs::path p) { return p / "OWNERS"; }
 
-bool has_owner_file(fs::path p) { return fs::exists(owner_path(p)); }
+bool has_owners_file(fs::path p) { return fs::exists(owners_path(p)); }
 
 void traverse_owners_files(fs::path p, vector<string>& owners) {
   cout << "Checking: " << p << endl;
-  if (has_owner_file(p)) {
-    auto op = owner_path(p);
+  if (has_owners_file(p)) {
+    auto op = owners_path(p);
     ifstream file(op);
     bool set_noparent = false;
     if (file.is_open()) {
