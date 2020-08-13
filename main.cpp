@@ -3,20 +3,22 @@
 #include <iostream>
 #include <vector>
 
-// TODO(dmiller): use some sort of flags/args library
+#include "absl/flags/flag.h"
+#include "absl/flags/parse.h"
+
+ABSL_FLAG(bool, should_debug, false, "Whether or not to print debug logs");
+
 // TODO(dmiller): write some tests maybe
 
 namespace fs = std::filesystem;
 using namespace std;
-
-bool should_debug = false;
 
 fs::path owners_path(fs::path p) { return p / "OWNERS"; }
 
 bool has_owners_file(fs::path p) { return fs::exists(owners_path(p)); }
 
 void debug_log(std::string m) {
-  if (should_debug) {
+  if (absl::GetFlag(FLAGS_should_debug)) {
     cout << m << endl;
   }
 }
@@ -54,6 +56,7 @@ void traverse_owners_files(fs::path p, vector<string>& owners) {
 }
 
 int main(int argc, char* argv[]) {
+  absl::ParseCommandLine(argc, argv);
   if (argc < 2) {
     cout << "must be called with at least one argument: the path to check "
             "for OWNERS"
@@ -62,10 +65,6 @@ int main(int argc, char* argv[]) {
   }
 
   auto path = argv[1];
-  if (argc == 3) {
-    std::string debug_flag(argv[2]);
-    should_debug = debug_flag.compare("debug") == 0;
-  }
   fs::path p = path;
   vector<string> owners;
   traverse_owners_files(fs::absolute(p).parent_path(), owners);
